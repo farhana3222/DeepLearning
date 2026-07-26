@@ -1,18 +1,16 @@
-
-
-import gradio as gr
+import streamlit as st
 import tensorflow as tf
 import numpy as np
 import joblib
 
-# Load model
+# Load model and files
 model = tf.keras.models.load_model("healthcare_chatbot_model.keras")
 
-# Load saved objects
 symptom_list = joblib.load("symptom_list.pkl")
 encoder = joblib.load("label_encoder.pkl")
 dialogue_dict = joblib.load("dialogue_dict.pkl")
 knowledge_base = joblib.load("knowledge_base.pkl")
+
 
 def create_symptom_vector(user_input):
     vector = np.zeros(len(symptom_list))
@@ -26,10 +24,8 @@ def create_symptom_vector(user_input):
 
     return vector.reshape(1, -1)
 
-def chatbot(symptoms):
 
-    if symptoms.strip() == "":
-        return "Please enter symptoms.", "", ""
+def chatbot(symptoms):
 
     input_vector = create_symptom_vector(symptoms)
 
@@ -51,19 +47,39 @@ def chatbot(symptoms):
 
     return disease, advice, medical_info
 
-demo = gr.Interface(
-    fn=chatbot,
-    inputs=gr.Textbox(
-        label="Enter Symptoms",
-        placeholder="Example: itching, skin_rash, headache"
-    ),
-    outputs=[
-        gr.Textbox(label="Predicted Disease"),
-        gr.Textbox(label="Healthcare Advice"),
-        gr.Textbox(label="Medical Information")
-    ],
-    title="🏥 AI-Based Healthcare Chatbot",
-    description="Enter symptoms separated by commas."
+
+# ---------------- UI ----------------
+
+st.set_page_config(
+    page_title="AI Healthcare Chatbot",
+    page_icon="🏥"
 )
 
-demo.launch()
+st.title("🏥 AI-Based Healthcare Chatbot")
+
+st.write(
+    "Enter symptoms separated by commas to predict the disease."
+)
+
+symptoms = st.text_input(
+    "Enter Symptoms",
+    placeholder="Example: itching, skin_rash, headache"
+)
+
+if st.button("Predict Disease"):
+
+    if symptoms.strip() == "":
+        st.warning("Please enter symptoms.")
+
+    else:
+
+        disease, advice, medical_info = chatbot(symptoms)
+
+        st.success(f"Predicted Disease: {disease}")
+
+        st.subheader("Healthcare Advice")
+        st.write(advice)
+
+        st.subheader("Medical Information")
+        st.write(medical_info)
+    
