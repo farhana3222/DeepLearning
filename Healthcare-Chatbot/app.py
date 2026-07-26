@@ -82,4 +82,3 @@ if st.button("Predict Disease"):
 
         st.subheader("Medical Information")
         st.write(medical_info)
-    
